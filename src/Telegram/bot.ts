@@ -67,5 +67,22 @@ bot.callbackQuery("your_projects", (ctx) => ctx.answerCallbackQuery("Showing you
 bot.callbackQuery("create_project", (ctx) => ctx.answerCallbackQuery("Creating new project..."));
 bot.callbackQuery("spam_launch", (ctx) => ctx.answerCallbackQuery("Launching SPAM..."));
 bot.callbackQuery("bump_bot", (ctx) => ctx.answerCallbackQuery("Bumping..."));
-bot.callbackQuery("referrals", (ctx) => ctx.answerCallbackQuery("Referral program loading..."));
+bot.callbackQuery("referrals", async (ctx) => {
+  const referralKeyboard = new InlineKeyboard()
+    .text("🎯 Create Reff", "create_referral").row()
+    .text("🔙 Back to Menu", "back_to_home");
+
+  await ctx.editMessageText(
+    `🤝 *Your Referral Program*
+
+You don't have a referral link yet.
+Click the button below to create one!
+
+Share your link to grow the community!`,
+    {
+      reply_markup: referralKeyboard,
+      parse_mode: "Markdown",
+    }
+  );
+});
 bot.callbackQuery("help", (ctx) => ctx.answerCallbackQuery("Here's some help!"));
