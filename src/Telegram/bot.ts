@@ -1,25 +1,42 @@
-import { Api, Bot, Context,InlineKeyboard } from "grammy";
-import dotnev from 'dotenv';
+import { Api, Bot, Context, InlineKeyboard } from "grammy";
+import dotenv from "dotenv";
 import { fileURLToPath } from "url";
 import path from "path";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-dotnev.config({
-    path:path.resolve(__dirname,'../../.env')
+dotenv.config({
+  path: path.resolve(__dirname, "../../.env"),
 });
 
-const token:string|undefined = process.env.bot_token;
+const token: string | undefined = process.env.bot_token;
 
-if(!token){
-    throw new Error('missing bot token');
-};
+if (!token) {
+  throw new Error("missing bot token");
+}
 
-export const bot:Bot<Context, Api> = new Bot(token);
+export const bot: Bot<Context, Api> = new Bot(token);
 
-bot.command('start',(ctx)=>{
-    ctx.reply(`🌟 Welcome to VORTEX!
+// Main menu (shared between commands and callbacks)
+function getMainMenuKeyboard() {
+  return new InlineKeyboard()
+    .text("📁 Your Projects", "your_projects")
+    .text("🚀 Create New Project", "create_project")
+    .row()
+    .text("🚀 SPAM LAUNCH", "spam_launch")
+    .row()
+    .text("🤑 BUMP BOT 🤑", "bump_bot")
+    .row()
+    .text("🔗 Referrals", "referrals")
+    .url("❓ Help", "https://deployonvortex.gitbook.io/vortex")
+    .row()
+    .url("👥 Discord", "https://discord.gg/vortexdeployer");
+}
+
+// /start command
+bot.command("start", (ctx) => {
+  ctx.reply(`🌟 Welcome to VORTEX!
 
 🔥 Where Things Happen! 🔥
 
@@ -34,23 +51,11 @@ Available Features:
 • Anti-MEV protection
 
 Use /home to access all features
-Use /settings for configuration`)
+Use /settings for configuration`);
 });
 
+// /home command
 bot.command("home", (ctx) => {
-  const keyboard = new InlineKeyboard()
-    .text("📁 Your Projects", "your_projects")
-    .text("🚀 Create New Project", "create_project")
-    .row()
-    .text("🚀 SPAM LAUNCH", "spam_launch")
-    .row()
-    .text("🤑 BUMP BOT 🤑", "bump_bot")
-    .row()
-    .text("🔗 Referrals", "referrals")
-    .url("❓ Help", "deployonvortex.gitbook.io/vortex")
-    .row()
-    .url("👥 Discord", "https://discord.gg/vortexdeployer");
-
   ctx.reply(
     `Yo, @${ctx.from?.username || "anon"}! Great to see you back! 🔥
 
@@ -58,18 +63,43 @@ What's the move, boss? Wanna mint some fresh heat or clip profits from your exis
 
 Hit the buttons below and let's make it happen:`,
     {
-      reply_markup: keyboard,
+      reply_markup: getMainMenuKeyboard(),
     }
   );
 });
 
-bot.callbackQuery("your_projects", (ctx) => ctx.answerCallbackQuery("Showing your projects..."));
-bot.callbackQuery("create_project", (ctx) => ctx.answerCallbackQuery("Creating new project..."));
-bot.callbackQuery("spam_launch", (ctx) => ctx.answerCallbackQuery("Launching SPAM..."));
-bot.callbackQuery("bump_bot", (ctx) => ctx.answerCallbackQuery("Bumping..."));
+// Individual button handlers
+bot.callbackQuery("your_projects", async (ctx) => {
+  await ctx.answerCallbackQuery();
+  await ctx.reply("Showing your projects...");
+});
+
+bot.callbackQuery("create_project", async (ctx) => {
+  await ctx.answerCallbackQuery();
+  await ctx.reply("Creating new project...");
+});
+
+bot.callbackQuery("spam_launch", async (ctx) => {
+  await ctx.answerCallbackQuery();
+  await ctx.reply("Launching SPAM...");
+});
+
+bot.callbackQuery("bump_bot", async (ctx) => {
+  await ctx.answerCallbackQuery();
+  await ctx.reply("Bumping...");
+});
+
+bot.callbackQuery("help", async (ctx) => {
+  await ctx.answerCallbackQuery("Here's some help!");
+});
+
+// Referrals submenu
 bot.callbackQuery("referrals", async (ctx) => {
+  await ctx.answerCallbackQuery();
+
   const referralKeyboard = new InlineKeyboard()
-    .text("🎯 Create Reff", "create_referral").row()
+    .text("🎯 Create Reff", "create_referral")
+    .row()
     .text("🔙 Back to Menu", "back_to_home");
 
   await ctx.editMessageText(
@@ -85,4 +115,25 @@ Share your link to grow the community!`,
     }
   );
 });
-bot.callbackQuery("help", (ctx) => ctx.answerCallbackQuery("Here's some help!"));
+
+// Create Referral logic
+bot.callbackQuery("create_referral", async (ctx) => {
+  await ctx.answerCallbackQuery("Referral link created! 🎉");
+  await ctx.reply("Your referral link: https://vortex.ai/r/your-code");
+});
+
+// Back to Menu handler
+bot.callbackQuery("back_to_home", async (ctx) => {
+  await ctx.answerCallbackQuery();
+
+  await ctx.editMessageText(
+    `Yo, @${ctx.from?.username || "anon"}! Great to see you back! 🔥
+
+What's the move, boss? Wanna mint some fresh heat or clip profits from your existing bag? 💸
+
+Hit the buttons below and let's make it happen:`,
+    {
+      reply_markup: getMainMenuKeyboard(),
+    }
+  );
+});
