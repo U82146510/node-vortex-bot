@@ -19,11 +19,15 @@ export const userMetadataState = new Map<number, MetadataState>();
 
 // Spam Launch Menu
 
-export function getSpamLaunchMenu(values?:Partial<Record<MetadataField,string>>):InlineKeyboard{
-    const getValue = (field:MetadataField)=>values?.[field] ? `${values[field]}` : "";
-    return new InlineKeyboard()
-    .text(`📝 Name: ${getValue("name")}`, "edit_name")
-    .text(`🔠 Symbol: ${getValue("symbol")}`, "edit_symbol")
+export function getSpamLaunchMenu(values?: Partial<Record<MetadataField, string>>): InlineKeyboard {
+  const getValue = (field: MetadataField): string => {
+    const val = values?.[field];
+    return val ? "Set" : "Not set";
+  };
+
+  return new InlineKeyboard()
+    .text(`📝 Name: ${values?.name || "Not set"}`, "edit_name")
+    .text(`🔠 Symbol: ${values?.symbol || "Not set"}`, "edit_symbol")
     .row()
     .text(`📄 Description: ${getValue("description")}`, "edit_description")
     .row()
@@ -39,7 +43,6 @@ export function getSpamLaunchMenu(values?:Partial<Record<MetadataField,string>>)
     .row()
     .text("🔙 Back to Menu", "back_to_home");
 };
-
 
 export function registerMetadataFieldHandlers(bot: Bot<Context, Api>):void {
   const handleEditField = (field: MetadataField, label: string) => {
