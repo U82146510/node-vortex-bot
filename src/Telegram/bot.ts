@@ -2,6 +2,9 @@ import { Api, Bot, Context, InlineKeyboard } from "grammy";
 import dotenv from "dotenv";
 import { fileURLToPath } from "url";
 import path from "path";
+import {getSpamLaunchMenu} from './menu/spamLaunch.ts';
+import {getMainMenuKeyboard} from './menu/mainMenu.ts';
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -18,21 +21,6 @@ if (!token) {
 
 export const bot: Bot<Context, Api> = new Bot(token);
 
-// Main menu (shared between commands and callbacks)
-function getMainMenuKeyboard() {
-  return new InlineKeyboard()
-    .text("📁 Your Projects", "your_projects")
-    .text("🚀 Create New Project", "create_project")
-    .row()
-    .text("🚀 SPAM LAUNCH", "spam_launch")
-    .row()
-    .text("🤑 BUMP BOT 🤑", "bump_bot")
-    .row()
-    .text("🔗 Referrals", "referrals")
-    .url("❓ Help", "https://deployonvortex.gitbook.io/vortex")
-    .row()
-    .url("👥 Discord", "https://discord.gg/vortexdeployer");
-}
 
 // /start command
 bot.command("start", (ctx) => {
@@ -81,17 +69,30 @@ bot.callbackQuery("create_project", async (ctx) => {
 
 bot.callbackQuery("spam_launch", async (ctx) => {
   await ctx.answerCallbackQuery();
-  await ctx.reply("Launching SPAM...");
+  await ctx.reply(`
+🎯 Project 522344314 Metadata
+
+Select a field to edit:
+
+❌ Metadata not yet deployed`,{
+    reply_markup:getSpamLaunchMenu()
+  });
 });
 
 bot.callbackQuery("bump_bot", async (ctx) => {
   await ctx.answerCallbackQuery();
-  await ctx.reply("Bumping...");
+  await ctx.reply(`
+  🤖 Welcome to the Bump Bot!
+
+This bot will help you create and manage bump operations for your tokens.
+
+First, let's set up your bump project. Please provide the token address you want to bump:`);
 });
 
 bot.callbackQuery("help", async (ctx) => {
   await ctx.answerCallbackQuery("Here's some help!");
 });
+
 
 // Referrals submenu
 bot.callbackQuery("referrals", async (ctx) => {
@@ -116,11 +117,21 @@ Share your link to grow the community!`,
   );
 });
 
+
 // Create Referral logic
 bot.callbackQuery("create_referral", async (ctx) => {
   await ctx.answerCallbackQuery("Referral link created! 🎉");
-  await ctx.reply("Your referral link: https://vortex.ai/r/your-code");
+  await ctx.reply(`
+    🎯 Create Your Custom Referral
+
+Please enter your desired referral code.
+
+Requirements:
+• Only letters and numbers
+• 4-15 characters long
+• No spaces or special characters`);
 });
+
 
 // Back to Menu handler
 bot.callbackQuery("back_to_home", async (ctx) => {
@@ -137,3 +148,5 @@ Hit the buttons below and let's make it happen:`,
     }
   );
 });
+
+
